@@ -1,4 +1,3 @@
-// frontend/src/pages/Dashboard.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import Navbar from '../components/layout/Navbar';
 import FileUpload from '../components/FileUpload';
@@ -11,7 +10,7 @@ import { useModal } from '../context/ModalContext';
 const Files = () => {
   const [files, setFiles] = useState([]);
   const [activeTab, setActiveTab] = useState('My Files');
-  const { showConfirmation } = useModal();
+  const { showDeleteOptions } = useModal();
 
   const fetchFiles = useCallback(async () => {
     try {
@@ -28,19 +27,36 @@ const Files = () => {
     }
   }, [activeTab, fetchFiles]);
 
-  const handleDeleteFile = async (fileId) => {
-    const confirmed = await showConfirmation(
-      'This will move the file to the trash. You can restore it later.',
-      'Move to Trash?'
+  const handleDeleteFile = async (file) => {
+    const choice = await showDeleteOptions(
+      `What would you like to do with "${file.originalFilename || 'this file'}"?`,
+      'Delete Options'
     );
-    if (confirmed) {
-      try {
-        await api.delete(`/files/${fileId}`);
-        setFiles(prevFiles => prevFiles.filter(f => f._id !== fileId));
-      } catch (error) {
-        console.error('Failed to delete file:', error);
-        alert('Could not move the file to trash.');
-      }
+
+    switch (choice) {
+      case 'trash':
+        try {
+          await api.delete(`/files/${file._id}`);
+          setFiles(prevFiles => prevFiles.filter(f => f._id !== file._id));
+        } catch (error) {
+          console.error('Failed to move to trash:', error);
+          alert('Could not move the file to trash.');
+        }
+        break;
+      
+      case 'permanent':
+        try {
+          await api.delete(`/files/permanent/${file._id}`);
+          setFiles(prevFiles => prevFiles.filter(f => f._id !== file._id));
+        } catch (error) {
+          console.error('Failed to permanently delete:', error);
+          alert('Could not permanently delete the file.');
+        }
+        break;
+      
+      default:
+        // User cancelled, do nothing
+        break;
     }
   };
 
@@ -54,7 +70,7 @@ const Files = () => {
       <div className="py-10">
         <header>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold leading-tight text-gray-900">Your Storage</h1>
+            <h1 className="text-3xl font-bold leading-tight text-gray-900">My Files</h1>
           </div>
         </header>
         <main>

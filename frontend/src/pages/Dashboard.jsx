@@ -16,12 +16,11 @@ const formatBytes = (bytes) => {
 };
 
 const Dashboard = () => {
-    const [stats, setStats] = useState(null); // Start with null to better handle loading
+    const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // This is our data fetching function
     const fetchAllStats = useCallback(async () => {
-        setLoading(true); // Set loading true at the start of fetch
+        setLoading(true);
         try {
             const [summaryRes, duplicatesRes, largeFilesRes, usageRes, categoriesRes, logsRes] = await Promise.all([
                 api.get('/analytics/storage-summary'),
@@ -46,12 +45,11 @@ const Dashboard = () => {
         }
     }, []);
 
-    // Fetch data on initial component load
     useEffect(() => {
         fetchAllStats();
     }, [fetchAllStats]);
 
-    if (!stats) {
+    if (!stats || loading) {
         return (
             <div className="min-h-screen bg-gray-100">
                 <Navbar />
@@ -71,7 +69,6 @@ const Dashboard = () => {
                 <header>
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                         <h1 className="text-3xl font-bold leading-tight text-gray-900">Analytics Dashboard</h1>
-                        {/* --- THE REFRESH BUTTON --- */}
                         <button
                             onClick={fetchAllStats}
                             disabled={loading}

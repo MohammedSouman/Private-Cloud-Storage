@@ -1,4 +1,3 @@
-// frontend/src/components/FileList.jsx
 import React, { useState } from 'react';
 import { Download, FileText, Trash2, Eye, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -108,7 +107,7 @@ const FileList = ({ files, onDelete }) => {
                       <button onClick={() => handleDownload(file)} className="text-indigo-600 hover:text-indigo-900" title="Download File">
                         <Download className="h-5 w-5" />
                       </button>
-                      <button onClick={() => onDelete(file._id)} className="text-red-600 hover:text-red-900" title="Delete File">
+                      <button onClick={() => onDelete(file)} className="text-red-600 hover:text-red-900" title="Delete File">
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
