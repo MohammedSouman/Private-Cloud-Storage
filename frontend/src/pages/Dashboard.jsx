@@ -60,7 +60,12 @@ const Dashboard = () => {
         );
     }
 
-    const duplicateStorageWasted = stats.duplicates.reduce((acc, group) => acc + (group.docs[0].size * (group.count - 1)), 0);
+    const duplicateStorageWasted = stats.duplicates.reduce((acc, group) => {
+      if (group.docs && group.docs.length > 0) {
+        return acc + (group.docs[0].size * (group.count - 1));
+      }
+      return acc;
+    }, 0);
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -90,9 +95,15 @@ const Dashboard = () => {
                     {/* Warning Sections */}
                     {stats.duplicates.length > 0 && (
                         <WarningCard icon={<Copy size={20} className="text-orange-500" />} title={`Found ${stats.duplicates.length} sets of duplicate files wasting ${formatBytes(duplicateStorageWasted)}`} color="orange">
-                            <ul className="text-sm text-orange-700 list-disc pl-5 space-y-1">
-                                {stats.duplicates.slice(0, 3).map(dup => (
-                                    <li key={dup._id.originalFilename}>"{dup._id.originalFilename}" ({dup.count} copies)</li>
+                            {/* --- THIS IS THE CHANGE --- */}
+                            <ul className="text-sm space-y-2 mt-2">
+                                {stats.duplicates.slice(0, 3).map((group, index) => (
+                                    <li key={index} className="flex items-start">
+                                        <span className="font-bold mr-2 text-orange-600">{'>'}</span>
+                                        <span className="font-medium text-orange-800 break-all">
+                                            {group.docs.map(doc => doc.originalFilename || 'Unnamed File').join(' | ')}
+                                        </span>
+                                    </li>
                                 ))}
                             </ul>
                         </WarningCard>
@@ -118,13 +129,13 @@ const Dashboard = () => {
                         <div className="bg-white p-6 rounded-lg shadow-md">
                            <h3 className="text-lg font-semibold mb-4 flex items-center"><Zap size={20} className="text-green-500 mr-2" /> Hot Files (Recently Accessed)</h3>
                            <ul className="space-y-2 text-sm">
-                               {stats.usage?.hotFiles.map(file => <li key={file._id} className="flex justify-between"><span>{file.originalFilename}</span><span className="text-gray-500">{new Date(file.lastAccessed).toLocaleDateString()}</span></li>)}
+                               {stats.usage?.hotFiles.map(file => <li key={file._id} className="flex justify-between"><span>{file.originalFilename || 'Unnamed'}</span><span className="text-gray-500">{new Date(file.lastAccessed).toLocaleDateString()}</span></li>)}
                            </ul>
                         </div>
                         <div className="bg-white p-6 rounded-lg shadow-md">
                            <h3 className="text-lg font-semibold mb-4 flex items-center"><Snowflake size={20} className="text-blue-500 mr-2" /> Cold Files (Not Accessed {'>'} 90 days)</h3>
                            <ul className="space-y-2 text-sm">
-                               {stats.usage?.coldFiles.map(file => <li key={file._id} className="flex justify-between"><span>{file.originalFilename}</span><span className="text-gray-500">{new Date(file.lastAccessed).toLocaleDateString()}</span></li>)}
+                               {stats.usage?.coldFiles.map(file => <li key={file._id} className="flex justify-between"><span>{file.originalFilename || 'Unnamed'}</span><span className="text-gray-500">{new Date(file.lastAccessed).toLocaleDateString()}</span></li>)}
                            </ul>
                         </div>
                     </div>

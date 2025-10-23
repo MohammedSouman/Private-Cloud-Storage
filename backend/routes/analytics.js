@@ -33,7 +33,6 @@ router.get('/logs', auth, async (req, res) => {
 // @route   GET api/analytics/storage-summary
 router.get('/storage-summary', auth, async (req, res) => {
   try {
-    // THE FIX: Use 'new' to correctly create an ObjectId instance
     const ownerId = new mongoose.Types.ObjectId(req.user.id);
     const stats = await File.aggregate([
       { $match: { owner: ownerId, isDeleted: { $ne: true } } },
@@ -49,17 +48,19 @@ router.get('/storage-summary', auth, async (req, res) => {
 // @route   GET api/analytics/duplicates
 router.get('/duplicates', auth, async (req, res) => {
     try {
-        // THE FIX: Use 'new' to correctly create an ObjectId instance
         const ownerId = new mongoose.Types.ObjectId(req.user.id);
         const duplicates = await File.aggregate([
             { $match: { owner: ownerId, isDeleted: { $ne: true } } },
-            { $group: {
-                _id: { originalFilename: '$originalFilename', size: '$size' },
+            {
+              $group: {
+                // <-- THIS IS THE CHANGE
+                _id: { contentHash: '$contentHash' }, // Group by the file's actual content hash
                 docs: { $push: '$$ROOT' },
                 count: { $sum: 1 }
-            }},
+              }
+            },
             { $match: { count: { $gt: 1 } } },
-            { $sort: { '_id.originalFilename': 1 } }
+            { $sort: { 'docs.uploadDate': 1 } } // Sort by the upload date of the files within the group
         ]);
         res.json(duplicates);
     } catch (err) { console.error(err); res.status(500).send('Server Error'); }
@@ -88,7 +89,6 @@ router.get('/usage-stats', auth, async (req, res) => {
 // @route   GET api/analytics/categories
 router.get('/categories', auth, async (req, res) => {
     try {
-        // THE FIX: Use 'new' to correctly create an ObjectId instance
         const ownerId = new mongoose.Types.ObjectId(req.user.id);
         const categories = await File.aggregate([
             { $match: { owner: ownerId, isDeleted: { $ne: true } } },

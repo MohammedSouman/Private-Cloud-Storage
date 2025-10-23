@@ -31,6 +31,11 @@ const FileSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  contentHash: { 
+    type: String,
+    required: true,
+    index: true, // Speeds up queries on this field
+  },
   uploadDate: {
     type: Date,
     default: Date.now,
@@ -39,11 +44,11 @@ const FileSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  isDeleted: { // <-- ADD THIS
+  isDeleted: {
     type: Boolean,
     default: false,
   },
-  deletedAt: { // <-- AND ADD THIS
+  deletedAt: {
     type: Date,
     default: null,
   },

@@ -16,7 +16,8 @@ const upload = multer({ storage: storage });
 // @access  Private
 router.post('/upload', [auth, upload.single('file')], async (req, res) => {
   try {
-    const { originalFilename, salt, iv } = req.body;
+    // <-- CHANGE #1: Add contentHash to the destructuring
+    const { originalFilename, salt, iv, contentHash } = req.body;
     const fileBuffer = req.file.buffer;
     const userId = req.user.id;
 
@@ -31,6 +32,7 @@ router.post('/upload', [auth, upload.single('file')], async (req, res) => {
       size: req.file.size,
       salt,
       iv,
+      contentHash, // <-- CHANGE #2: Save the hash to the database
     });
 
     await newFile.save();
